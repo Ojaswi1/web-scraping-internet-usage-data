@@ -1,6 +1,6 @@
 ---
 title: "Effect of Population Density on Life Expectancy"
-author: "YOUR NAME"
+author: "Ojaswi Malik"
 date: "`r lubridate::today()`"
 output: github_document
 ---
@@ -10,4 +10,77 @@ output: github_document
 
 ```{r, echo = TRUE}
 devtools::session_info()
+library(tidyverse)
+#loading hapminder() package
+install.packages("gapminder")
+library(gapminder)
+#loading geonames() package
+install.packages("geonames")
+library(geonames)
+#loading countrycode() package
+install.packages("countrycode")
+library(countrycode)
+
+#retrieve API key stored in .Rprofile
+key <- getOption("geonamesUsername")
+
+#setting theme
+theme_set(theme_minimal())
 ```
+
+
+```{r building graph}
+#glimpsing the gapminder data
+glimpse(gapminder)
+
+# 1.loading the country information using geonames 
+countryInfo <- GNcountryInfo()
+
+# 2. using countrycode() to make country names format  same for both datasets 
+countryInfo <- countryInfo %>%
+  mutate(country = countrycode(sourcevar = countryInfo$countryCode, origin = "iso2c", destination = "country.name"))
+
+# 2. Joining the 2 datsets and 3. Calculating population density
+joined <- gapminder %>%
+  left_join(countryInfo, by = "country" ) %>%
+  #converting area into numeric to use it to calculate pop density
+  mutate(areaInSqKm = as.numeric(areaInSqKm)) %>%
+  mutate(pop_dens = pop/areaInSqKm) 
+
+# 4. Plotting graph with population density
+joined %>%
+  ggplot(mapping = aes(x = pop_dens, y=lifeExp )) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() + 
+  scale_x_log10() +
+  labs(
+    title = "Relationship between Population Density and Life Expectancy",
+    x = "Population Density (Population/Area in Square KM)",
+    y = "Average Life Expectancy"
+  )
+
+# Comparing across continents
+joined %>%
+  #dropping NA values
+  drop_na(continentName) %>%
+  group_by(continentName) %>%
+  ggplot(mapping = aes(x = pop_dens, y=lifeExp, color = continentName )) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() + 
+  scale_x_log10() +
+  labs(
+    title = "Relationship between Population Density and Life Expectancy",
+    subtitle = "Difference across continents",
+    x = "Population Density (Population/Area in Square KM)",
+    y = "Average Life Expectancy",
+    color = "Continent Name"
+  ) + 
+  theme(legend.position = "bottom")
+  
+```
+
+**Observation** :
+
+- **Overall**: As population density increases, the average life expectancy increases. Moreover, the rate of growth increases as population density nears 100.
+
+- **Across continents**: Notably, Asia has the highest population density and follows the general trend i.e. as population density increases, the average life expectancy increases. Similiarly, Africa also has higher life expectancy when population density increases. Both Oceania and North America seem to have "W" shaped graphs, implying higher population density having initially lower high expectancy, but later there are high and low life expectancies as population density increases. Moreover, both Oceania and North America have higher average life expectancy that Asia and Africa. South America has a sharp rise in average life expectancy as population density increases. Europe initially has a negative relationship between the 2 variables, but for higher values of population density it has higher averae life expectancy.
