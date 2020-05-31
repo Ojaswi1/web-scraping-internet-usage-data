@@ -1,0 +1,38 @@
+---
+title: "NASA"
+author: "Ojaswi Malik"
+date: "`r lubridate::today()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(httr)
+
+#Run this command to open the ,Rprofile key to store your API key
+usethis::edit_r_profile()
+
+#retrieve API key stored in .Rprofile
+nasa_key <- getOption("nasa_key")
+
+theme_set(theme_minimal())
+```
+
+
+```{r}
+
+nasa_data <- GET("https://api.nasa.gov/neo/rest/v1/feed?",
+                 query = list(start_date = 2020-04-26,
+                              end_date = 2020-04-30,
+                              api_key = nasa_key))
+content(nasa_data)
+
+```
+
+## ## Session Info
+
+```{r, echo = TRUE}
+devtools::session_info()
+```

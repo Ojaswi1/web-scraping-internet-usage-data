@@ -6,10 +6,10 @@ output: github_document
 ---
 
 
-## Session info
+## Setup
 
-```{r, echo = TRUE}
-devtools::session_info()
+```{r setup}
+
 library(tidyverse)
 #loading hapminder() package
 install.packages("gapminder")
@@ -28,6 +28,7 @@ key <- getOption("geonamesUsername")
 theme_set(theme_minimal())
 ```
 
+## Analysis
 
 ```{r building graph}
 #glimpsing the gapminder data
@@ -84,3 +85,9 @@ joined %>%
 - **Overall**: As population density increases, the average life expectancy increases. Moreover, the rate of growth increases as population density nears 100.
 
 - **Across continents**: Notably, Asia has the highest population density and follows the general trend i.e. as population density increases, the average life expectancy increases. Similiarly, Africa also has higher life expectancy when population density increases. Both Oceania and North America seem to have "W" shaped graphs, implying higher population density having initially lower high expectancy, but later there are high and low life expectancies as population density increases. Moreover, both Oceania and North America have higher average life expectancy that Asia and Africa. South America has a sharp rise in average life expectancy as population density increases. Europe initially has a negative relationship between the 2 variables, but for higher values of population density it has higher averae life expectancy.
+
+## Session Info
+
+```{r, echo = TRUE}
+devtools::session_info()
+```
