@@ -11,6 +11,7 @@ output: github_document
 ```{r setup}
 
 library(tidyverse)
+library(coefplot)
 #loading hapminder() package
 install.packages("gapminder")
 library(gapminder)
@@ -85,6 +86,22 @@ joined %>%
 - **Overall**: As population density increases, the average life expectancy increases. Moreover, the rate of growth increases as population density nears 100.
 
 - **Across continents**: Notably, Asia has the highest population density and follows the general trend i.e. as population density increases, the average life expectancy increases. Similiarly, Africa also has higher life expectancy when population density increases. Both Oceania and North America seem to have "W" shaped graphs, implying higher population density having initially lower high expectancy, but later there are high and low life expectancies as population density increases. Moreover, both Oceania and North America have higher average life expectancy that Asia and Africa. South America has a sharp rise in average life expectancy as population density increases. Europe initially has a negative relationship between the 2 variables, but for higher values of population density it has higher averae life expectancy.
+
+## Coefficient Plot
+
+This coefficient plot estimates a linear regression model for predicting Average life expectancy as a function of GDP per capital, Area in Sq KM, and population density.
+
+```{r}
+#constructing OLS model
+exp_mod <- lm(lifeExp ~ pop + gdpPercap + areaInSqKm + pop_dens,
+              data = joined)
+
+#creating the plot
+coefplot(exp_mod, sort = "magnitude", intercept = FALSE)
+
+```
+## Observation:
+As we saw in the smoothing line above, population density has a positive relationship with average life expectancy.But it also has high variance. The other 3 coefficients: GDP per capital, Area in Sq KM, and population density also have a positive relationship respectively.
 
 ## Session Info
 
