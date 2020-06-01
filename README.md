@@ -21,7 +21,7 @@ This HW Assignment is distributed in 2 parts:
 ##  To access the geonames API  by using the geonames() package you need to:
   1. Register an account on [geonames website](http://www.geonames.org/)
   2. Enable [free web services](http://www.geonames.org/enablefreewebservice)
-  3. Open .Rprofie and store your usernames
+  3. Open .Rprofie and store your username
       - file.edit(here::here(".Rprofile"))
       - options("geonamesUsername" = "your_user_name")
 
