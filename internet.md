@@ -186,7 +186,7 @@ top_15 %>%
 
 ### 5\. Coefficient Plot
 
-This coefficient plot estimates a linear regression model for prediction
+This coefficient plot estimates a linear regression model for predicting
 2018 Internet Usage on average as a function of secure internet servers
 in 2018, goods exported and imported in 2017, and services exported in
 2017.
