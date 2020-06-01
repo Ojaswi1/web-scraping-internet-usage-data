@@ -12,14 +12,11 @@ output: github_document
 
 library(tidyverse)
 library(coefplot)
-#loading hapminder() package
-install.packages("gapminder")
+#loading gapminder() package
 library(gapminder)
 #loading geonames() package
-install.packages("geonames")
 library(geonames)
 #loading countrycode() package
-install.packages("countrycode")
 library(countrycode)
 
 #retrieve API key stored in .Rprofile
@@ -31,7 +28,7 @@ theme_set(theme_minimal())
 
 ## Analysis
 
-```{r building graph}
+```{r building graph, message=FALSE, warning=FALSE}
 #glimpsing the gapminder data
 glimpse(gapminder)
 
