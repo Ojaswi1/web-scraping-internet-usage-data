@@ -1,5 +1,5 @@
 ---
-title: "Web Scraping"
+title: "Web Scraping - Internet Usage Data"
 author: "Ojaswi Malik"
 date: "`r lubridate::today()`"
 output: github_document
@@ -12,13 +12,12 @@ library(tidyverse)
 library(rvest)
 library(coefplot)
 
-
 theme_set(theme_minimal())
 ```
 
 ## Scraping the data
 
-```{r scraping}
+```{r scraping, message=FALSE, warning=FALSE}
 #reading the website
 read <- read_html("http://wdi.worldbank.org/table/5.12")
 
@@ -53,13 +52,13 @@ new_internet_data <- new_internet_data[-c(218:264), ]
 ```
 ## Analysis
 
+###  1. Relationship between Internet Users and Secure Internet Servers
 
-###  Relationship between Internet Users and Secure Internet Servers
-
-```{r}
+```{r relationship1, message=FALSE, warning=FALSE}
 new_internet_data %>%
   ggplot(aes(x = `2018_Internet_Usage`, y = `2018_Secure_Internet_servers`)) + 
   geom_point(alpha = 0.5) + 
+  #using a smoothing line to visualise the relationship
   geom_smooth() + 
   labs(
     title = "Relationship between Internet Users and Secure Internet Servers",
@@ -69,16 +68,20 @@ new_internet_data %>%
 
 ```
 
-### Observation:
+### Observation: 
+The general trend shows that as the percentage of population using the internet increases, the number of secure internet servers also increases. This makes sense as a country would need higher number of servers to support large internet user in their population.
 
-### Ranking all countries in order of Internet Users in 2018
+### 2. Ranking all countries in order of Internet Users in 2018
 
-```{r, fig.height = 20}
+```{r ranking, fig.height = 20}
 
 new_internet_data %>%
+  #removing NA values
   drop_na(`2018_Internet_Usage`) %>%
+  #in descending order of 2018 internet usage
   ggplot(aes(x = fct_reorder(Country, `2018_Internet_Usage`), y = `2018_Internet_Usage`)) + 
   geom_col() +
+  #highlighting USA in blue
   geom_col(data = new_internet_data %>%
              filter(Country == "United States"), 
            fill = "dodgerblue") +
@@ -92,11 +95,13 @@ new_internet_data %>%
 
 ```
 
-### Observation
+### Observation:
+Plotting all 216 countries, this yields a very large plot. Comparing the first and last countries there is big difference of about 98% of population using the internet. I have also highlighted the US's position in blue which is in the top 25% of all countries. In the next analyses, I will narrow down the list of countries.
 
-### 2. Focusing on top 15 countries
+### 3. Focusing on top 15 countries
 
-```{r}
+```{r top15}
+#getting only the top 15 countries from the above graph
 top_15 <- top_n(new_internet_data, 15, `2018_Internet_Usage`)
 
 top_15 %>%
@@ -113,12 +118,13 @@ top_15 %>%
 
 ```
 
-### Observation:
+### Observation: 
+These top 15 countries are really close in their percentage of population on the internet. The leading country is Qatar.
 
-### For these top 15 countries plotting good exports, imports and service exports in 2017 
+### 4. For these top 15 countries plotting good exports, imports and service exports in 2017 
 
-```{r}
-
+```{r 2017}
+#for 2017 goods exports
 top_15 %>%
   drop_na(`2017_Goods_Exports`) %>%
   ggplot() +
@@ -130,6 +136,7 @@ top_15 %>%
     y = "% of total goods exports in 2017"
   )
 
+#for 2017 goods imports
 top_15 %>%
   drop_na(`2017_Goods_Imports`) %>%
   ggplot() +
@@ -141,6 +148,7 @@ top_15 %>%
     y = "% of total goods imports in 2017"
   )
 
+#for 2017 services exports
 top_15 %>%
   drop_na(`2017_Services_Exports`) %>%
   ggplot() +
@@ -156,12 +164,19 @@ top_15 %>%
 ```
 
 
-### Observation
+### Observation:
 
-### Coefficient Plot
+- **Goods, Exports**: Despite being the country with the highest % of internet users, Qatar has the lowest % of goods exports. Korea has the largest percentage of goods exported in 2017.
+
+- **Goods, Imports**: Korea also has the largest percentage of goods imported in 2017.
+
+- **Services, Exports**: Kuwait has the largest percentage of services exported in 2017.
+
+### 5. Coefficient Plot
+This coefficient plot estimates a linear regression model for prediction 2018 Internet Usage on average as a function of secure internet servers in 2018, goods exported and imported in 2017, and services exported in 2017.
 
 ```{r coefficient plot}
-
+#OLS model
 users_mod <- lm(`2018_Internet_Usage` ~ 
                   `2018_Secure_Internet_servers` + 
                   `2017_Goods_Exports` +
@@ -170,10 +185,21 @@ users_mod <- lm(`2018_Internet_Usage` ~
                 data = new_internet_data
                   )
 
+#generating the coefficient plot
 coefplot(users_mod, sort = "magnitude", intercept = FALSE)
+  
 ```
 
 ### Observation 
+
+The relationships highlighted from this plot:
+
+- As good imported increases, there is a higher percentage of users on the internet on average.
+
+- As secure internet servers increases, there are a higher % of internet users. Although, this relationship is not as strong as with goods imported.
+
+- As services exported and goods exported increases, there is a fewer percentage of users on the internet on average.
+
 
 ## Session Info
 
