@@ -10,32 +10,170 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(rvest)
+library(coefplot)
 
 
 theme_set(theme_minimal())
 ```
 
-```{r}
+## Scraping the data
 
+```{r scraping}
+#reading the website
 read <- read_html("http://wdi.worldbank.org/table/5.12")
 
+#selecting the elements with css table
 table <- html_nodes(read, css = "table") 
 
+#choosing the 3rd table and renaming the headers of the columns
 internet_data <- html_table(table, fill = TRUE)[[3]] %>%
   as_tibble() %>%
   rename(
     "Country" = 1,
-    "Individuals using the Internet in 2018 (% of population)" = 2,
-    "Secure Internet servers in 2018 (per million people)" = 3,
-    "% of total goods exports in 2017" = 4,
-    "% of total goods imports in 2017" = 5,
-    "% of total services exports in 2017" = 6
+    "2018_Internet_Usage" = 2,
+    "2018_Secure_Internet_servers" = 3,
+    "2017_Goods_Exports" = 4,
+    "2017_Goods_Imports" = 5,
+    "2017_Services_Exports" = 6
+  )
+
+#converting all data in the table to numeric so we can analyse it
+new_internet_data <- internet_data %>%
+  mutate(
+    `2018_Internet_Usage` = as.numeric(`2018_Internet_Usage`),
+    `2018_Secure_Internet_servers`= as.numeric(`2018_Secure_Internet_servers`),
+    `2017_Goods_Exports` = as.numeric(`2017_Goods_Exports`),
+    `2017_Goods_Imports` = as.numeric(`2017_Goods_Imports`),
+    `2017_Services_Exports` = as.numeric(`2017_Services_Exports`)
+  )
+
+#deleting rows from 218 to 264 because those are not countries
+new_internet_data <- new_internet_data[-c(218:264), ]
+
+```
+## Analysis
+
+
+###  Relationship between Internet Users and Secure Internet Servers
+
+```{r}
+new_internet_data %>%
+  ggplot(aes(x = `2018_Internet_Usage`, y = `2018_Secure_Internet_servers`)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth() + 
+  labs(
+    title = "Relationship between Internet Users and Secure Internet Servers",
+    x = "% of population using the internet in 2018",
+    y = "Secure internet servers per million people"
+  )
+
+```
+
+### Observation:
+
+### Ranking all countries in order of Internet Users in 2018
+
+```{r, fig.height = 20}
+
+new_internet_data %>%
+  drop_na(`2018_Internet_Usage`) %>%
+  ggplot(aes(x = fct_reorder(Country, `2018_Internet_Usage`), y = `2018_Internet_Usage`)) + 
+  geom_col() +
+  geom_col(data = new_internet_data %>%
+             filter(Country == "United States"), 
+           fill = "dodgerblue") +
+  coord_flip() +
+  labs(
+    title = "Countries in order of internet users",
+    subtitle = "USA highlighted",
+    y = "% of population using the internet in 2018",
+    x = "Country"
+  )
+
+```
+
+### Observation
+
+### 2. Focusing on top 15 countries
+
+```{r}
+top_15 <- top_n(new_internet_data, 15, `2018_Internet_Usage`)
+
+top_15 %>%
+  drop_na(`2018_Internet_Usage`) %>%
+  ggplot(aes(x = fct_reorder(Country, `2018_Internet_Usage`), y = `2018_Internet_Usage`)) + 
+  geom_col() +
+  coord_flip() +
+    labs(
+    title = "Top 15 countries in order of internet users",
+    y = "% of population using the internet in 2018",
+    x = "Country"
   )
 
 
+```
+
+### Observation:
+
+### For these top 15 countries plotting good exports, imports and service exports in 2017 
+
+```{r}
+
+top_15 %>%
+  drop_na(`2017_Goods_Exports`) %>%
+  ggplot() +
+  geom_col(aes(x = Country, y = `2017_Goods_Exports`), fill = "red") +
+  coord_flip() + 
+  labs(
+    title = "Country wise goods exports",
+    x = "Country",
+    y = "% of total goods exports in 2017"
+  )
+
+top_15 %>%
+  drop_na(`2017_Goods_Imports`) %>%
+  ggplot() +
+  geom_col(aes(x = Country, y = `2017_Goods_Imports`), fill = "blue") +
+  coord_flip() +
+  labs(
+    title = "Country wise goods imports",
+    x = "Country",
+    y = "% of total goods imports in 2017"
+  )
+
+top_15 %>%
+  drop_na(`2017_Services_Exports`) %>%
+  ggplot() +
+  geom_col(aes(x = Country, y = `2017_Services_Exports`), fill = "purple") +
+  coord_flip() +
+  labs(
+    title = "Country wise services exports",
+    x = "Country",
+    y = "% of total services exports in 2017"
+  )
 
 
 ```
+
+
+### Observation
+
+### Coefficient Plot
+
+```{r coefficient plot}
+
+users_mod <- lm(`2018_Internet_Usage` ~ 
+                  `2018_Secure_Internet_servers` + 
+                  `2017_Goods_Exports` +
+                  `2017_Goods_Imports` +
+                  `2017_Services_Exports`,
+                data = new_internet_data
+                  )
+
+coefplot(users_mod, sort = "magnitude", intercept = FALSE)
+```
+
+### Observation 
 
 ## Session Info
 
