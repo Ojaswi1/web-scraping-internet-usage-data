@@ -1,0 +1,44 @@
+---
+title: "Web Scraping"
+author: "Ojaswi Malik"
+date: "`r lubridate::today()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rvest)
+
+
+theme_set(theme_minimal())
+```
+
+```{r}
+
+read <- read_html("http://wdi.worldbank.org/table/5.12")
+
+table <- html_nodes(read, css = "table") 
+
+internet_data <- html_table(table, fill = TRUE)[[3]] %>%
+  as_tibble() %>%
+  rename(
+    "Country" = 1,
+    "Individuals using the Internet in 2018 (% of population)" = 2,
+    "Secure Internet servers in 2018 (per million people)" = 3,
+    "% of total goods exports in 2017" = 4,
+    "% of total goods imports in 2017" = 5,
+    "% of total services exports in 2017" = 6
+  )
+
+
+
+
+```
+
+## Session Info
+
+```{r, echo = TRUE}
+devtools::session_info()
+```
